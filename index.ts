@@ -1,4 +1,5 @@
-import Fastify from "fastify";
+import Fastify, { FastifyReply, FastifyRequest } from "fastify";
+import fjwt from "@fastify/jwt";
 import userRoutes from "./src/modules/user/user.route";
 import { userSchemas } from "./src/modules/user/user.schema";
 
@@ -11,6 +12,22 @@ export const server = Fastify();
 server.get('/check', async (request, reply) => {
     return { status: "Ok" }
 })
+
+// Fastify JWT
+
+server.register(fjwt, {
+    secret: "qwertyuiopasdfghjklzxcvbnm1234567890"
+})
+
+server.decorate('authenticate', 
+    async (request: FastifyRequest, reply: FastifyReply) => {
+        try {
+            await request.jwtVerify();
+        } catch (error) {
+            return reply.code(500).send(error)
+        }
+    }
+)
 
 // Schemas
 
