@@ -4,6 +4,7 @@ import swagger from "fastify-swagger";
 import { withRefResolver } from "fastify-zod"
 import userRoutes from "./src/modules/user/user.route";
 import { userSchemas } from "./src/modules/user/user.schema";
+import { version } from "./package.json";
 
 const PORT = 4000;
 
@@ -33,28 +34,21 @@ server.register(fjwt, {
 
 server.register(
     swagger,
-    {
-        swagger: {
+    withRefResolver({
+        routerPrefix: '/docs',
+        exposeRoute: true,
+        staticsCSP: true,
+        openapi: {
             info: {
                 title: 'Fastify API',
-                description: 'Building a blazing fast REST API with Node.js, MongoDB, Fastify and Swagger',
-                version: '0.1.0'
-            },
-            externalDocs: {
-                url: 'https://swagger.io',
-                description: 'Find more info here'
-            },
-            host: 'localhost',
-            schemes: ['http'],
-            consumes: ['application/json'],
-            produces: ['application/json']
+                description: 'API for some Users',
+                version,
+            }
         }
-        exposeRoute: true,
-        routePrefix: '/docs',
-    }
-    )
-    
-    server.decorate('authenticate',
+    })
+)
+
+server.decorate('authenticate',
     async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             await request.jwtVerify();
