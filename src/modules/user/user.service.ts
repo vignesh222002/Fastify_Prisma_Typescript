@@ -17,3 +17,13 @@ export async function findUserByEmail(email: string, password: string) {
         }
     })
 }
+
+export async function getAllUsers() {
+    return prisma.user.findMany({
+        select: {
+            id: true,
+            name: true,
+            email: true,
+        }
+    })
+}
