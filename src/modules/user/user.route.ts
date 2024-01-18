@@ -6,6 +6,7 @@ async function userRoutes(server: FastifyInstance) {
     server.post('/create',
         {
             schema: {
+                tags: ['user'],
                 body: $ref('createUserSchema'),
                 response: {
                     201: $ref('createUserResponseSchema'),
@@ -19,6 +20,7 @@ async function userRoutes(server: FastifyInstance) {
         '/login',
         {
             schema: {
+                tags: ['user'],
                 body: $ref('loginSchema'),
                 response: {
                     200: $ref('loginResponseSchema'),
@@ -31,7 +33,17 @@ async function userRoutes(server: FastifyInstance) {
     server.get(
         '/all',
         {
-            preHandler: [server.authenticate]
+            preHandler: [server.authenticate],
+            schema: {
+                tags: ['user'],
+                headers: {
+                    type: 'object',
+                    properties: {
+                        authorization: { type: 'string' }
+                    },
+                    required: ['authorization'],
+                }
+            }
         },
         getUsersHandler
     )

@@ -1,10 +1,11 @@
 import Fastify, { FastifyReply, FastifyRequest } from "fastify";
 import fjwt from "@fastify/jwt";
-import swagger from "fastify-swagger";
-import { withRefResolver } from "fastify-zod"
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
+import swaggerConfig from "./swaggerConfig";
+import cors from '@fastify/cors'
 import userRoutes from "./src/modules/user/user.route";
 import { userSchemas } from "./src/modules/user/user.schema";
-import { version } from "./package.json";
 
 const PORT = 4000;
 
@@ -18,6 +19,19 @@ declare module "fastify" {
     }
 }
 
+// Cors
+
+server.register(cors, {
+    origin: "*",
+    methods: ['GET', 'PUT', 'POST'],
+    credentials: true,
+});
+
+// Swagger
+
+server.register(swagger, swaggerConfig);
+server.register(swaggerUi);
+
 // Checking API
 
 server.get('/check', async (request, reply) => {
@@ -29,24 +43,6 @@ server.get('/check', async (request, reply) => {
 server.register(fjwt, {
     secret: "qwertyuiopasdfghjklzxcvbnm1234567890"
 })
-
-// Swagger Plugin
-
-server.register(
-    swagger,
-    withRefResolver({
-        routerPrefix: '/docs',
-        exposeRoute: true,
-        staticsCSP: true,
-        openapi: {
-            info: {
-                title: 'Fastify API',
-                description: 'API for some Users',
-                version,
-            }
-        }
-    })
-)
 
 server.decorate('authenticate',
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -67,12 +63,15 @@ for (const schema of userSchemas) {
 // Routes
 
 server.register(userRoutes, { prefix: 'api/users' });
-// server.register(() => { }, { prefix: 'api/products' });
 
 // Start Server
 
 try {
-    server.listen({ port: PORT })
+    server.listen({ port: PORT }, (err, address) => {
+        if (err) {
+            console.log(err);
+        }
+    })
 }
 catch (error) {
     server.log.error(error)
